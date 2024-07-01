@@ -71,14 +71,12 @@ class Artifact(ABC):
         return f"Artifact(prompt={self.prompt}, payload_data={self.payload_data}, mandatory_tags={self.mandatory_tags}, optional_tags={self.optional_tags}, data={self.data}, metadata={self.metadata}, constructed={self.constructed})"
 
 # Not working right? Not called? Diamond problem? 
-class MediaMixin:
+class MediaMixin(Artifact):
     def __init__(self, *args, start_time: int, end_time: int, **kwargs):
-        kwargs.pop('start_time', None)
-        kwargs.pop('end_time', None)
+        super().__init__(*args, **kwargs)
         self.mandatory_tags['start_time'] = start_time
         self.mandatory_tags['end_time'] = end_time
-        super().__init__(*args, **kwargs)
-        
+
     @property
     def duration(self) -> int:
         return self.mandatory_tags['end_time'] - self.mandatory_tags['start_time']

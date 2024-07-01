@@ -43,5 +43,8 @@ class WebScraperArtifact(Artifact):
             self.logger.error(f"Failed to scrape the webpage. Status code: {response.status_code}")
             raise RuntimeError(f"Failed to scrape the webpage. Status code: {response.status_code}")
 
+# Review what system we're using for mixin constructors
 class MediaWebScraperArtifact(WebScraperArtifact, MediaMixin):
-    pass
+    @classmethod
+    def build(cls, url: str, start_time: int, end_time: int, user_agent: str = 'Mozilla/5.0', payload_data=None, **kwargs):
+        return cls({"url": url}, payload_data, start_time=start_time, end_time=end_time, user_agent=user_agent, **kwargs)

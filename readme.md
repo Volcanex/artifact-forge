@@ -28,7 +28,7 @@ The `Artifact` class serves as the base class for all artifacts in the library. 
 
 ## Mixin Logic
 
-The library utilizes mixin classes to add specific functionalities to artifacts. The `MediaMixin` class is an example of a mixin that provides media-related properties and methods, such as `start_time`, `end_time`, and `duration`.
+The library utilizes mixin classes to add specific functionalities to artifacts. The `MediaMixin` class is an example of a mixin that provides media-related properties and methods, such as `start_time`, `end_time`, and `duration`. It inherits from the Artifact class.
 
 Mixins allow for code reuse and help keep the artifact classes focused on their core responsibilities.
 
@@ -42,7 +42,7 @@ Concrete artifacts override the `build` and `generate_data` methods to provide c
 
 Artifacts can be combined with mixins to create more specialized artifacts. For example, a `MediaWebScraperArtifact` can be created by inheriting from both the `WebScraperArtifact` and `MediaMixin` classes.
 
-Combined artifacts inherit the attributes and methods from both the base artifact class and the mixin classes.
+Combined artifacts inherit the attributes and methods from the specific, the base artifact class and the mixin classes.
 
 ## JSON Formatting
 
