@@ -1,22 +1,20 @@
 from artifact import Artifact, MediaMixin
-import json
 import requests
 from bs4 import BeautifulSoup
-from artifact import Artifact
 from logger_config import setup_logger
+
 class WebScraperArtifact(Artifact):
-    def __init__(self, *args, user_agent='Mozilla/5.0', **kwargs):
+    def __init__(self, *args, user_agent: str = 'Mozilla/5.0', **kwargs):
         super().__init__(*args, **kwargs)
         self.user_agent = user_agent
         self.logger = setup_logger(self.__class__.__name__)
 
     @classmethod
-    def build(cls, prompt, user_agent='Mozilla/5.0', payload_data=None, **kwargs):
-        formatted_prompt = json.dumps({"url": prompt})
-        return cls(formatted_prompt, payload_data, user_agent=user_agent, **kwargs)
+    def build(cls, url: str, user_agent: str = 'Mozilla/5.0', payload_data=None, **kwargs):
+        return cls({"url": url}, payload_data, user_agent=user_agent, **kwargs)
 
-    def generate_data(self, prompt, payload_data):
-        url = json.loads(prompt)['url']
+    def generate_data(self, prompt: dict, payload_data):
+        url = prompt["url"]
         headers = {'User-Agent': self.user_agent}
         self.logger.info(f"Sending GET request to {url}")
         response = requests.get(url, headers=headers)
@@ -40,7 +38,10 @@ class WebScraperArtifact(Artifact):
             }
             
             self.logger.info("Data and metadata generated successfully.")
-            return json.dumps(data), json.dumps(metadata)
+            return data, metadata
         else:
             self.logger.error(f"Failed to scrape the webpage. Status code: {response.status_code}")
             raise RuntimeError(f"Failed to scrape the webpage. Status code: {response.status_code}")
+
+class MediaWebScraperArtifact(WebScraperArtifact, MediaMixin):
+    pass
