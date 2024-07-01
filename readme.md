@@ -2,7 +2,7 @@
 
 ArtifactForge is a flexible and extensible library for creating and managing various types of artifacts, with a focus on media-related functionalities.
 
-![Basic structure of the Artifact superclass](images/artifact_structure.png)
+![Basic structure of the Artifact superclass](artifact_structure.png)
 
 ## Table of Contents
 
