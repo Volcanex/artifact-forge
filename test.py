@@ -8,7 +8,7 @@ def test_web_scraper_artifact():
     #artifact = WebScraperArtifact.build(url, user_agent="Test")
     #artifact.construct()
     
-    media_artifact = MediaWebScraperArtifact.build(url, start_time=0, end_time=60, user_agent=user_agent)
+    media_artifact = MediaWebScraperArtifact.build(url, 0, 60, user_agent=user_agent)
     media_artifact.construct()
     
     #print(f"Artifact Representation: {repr(artifact)}")

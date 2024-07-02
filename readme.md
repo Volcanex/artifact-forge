@@ -46,9 +46,7 @@ Combined artifacts inherit the attributes and methods from the specific, the bas
 
 ## JSON Formatting
 
-The library uses JSON formatting for the `prompt`, `mandatory_tags`, `optional_tags`, `data`, and `metadata` attributes. JSON provides a standardized and portable format for data exchange and storage.
-
-The `is_json_serializable` function is used to check if a given data is JSON serializable, ensuring that the data can be properly serialized and deserialized.
+The library uses dicts for the `prompt`, `mandatory_tags`, `optional_tags`, `data`, and `metadata` attributes. These dicts are readily serialisable to JSON and this is enforced.
 
 ## How This Structure Works
 

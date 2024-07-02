@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 import json
+import inspect
+from logger_config import setup_logger
 
 class Artifact(ABC):
     def __init__(self, prompt: dict, payload_data=None, mandatory_tags: dict = None, optional_tags: dict = None, data: dict = None, metadata: dict = None, constructed: bool = False, **kwargs):
@@ -10,6 +12,8 @@ class Artifact(ABC):
         self.data = data
         self.metadata = metadata
         self.constructed = constructed
+        
+        self.logger = setup_logger(self.__class__.__name__)
         
         if (data is None) != (metadata is None):
             raise ValueError("Can't load data without metadata or vice versa.")
@@ -69,13 +73,20 @@ class Artifact(ABC):
         
     def __repr__(self):
         return f"Artifact(prompt={self.prompt}, payload_data={self.payload_data}, mandatory_tags={self.mandatory_tags}, optional_tags={self.optional_tags}, data={self.data}, metadata={self.metadata}, constructed={self.constructed})"
-
-# Not working right? Not called? Diamond problem? 
+    @classmethod
+    def combine_build(cls, build_method1, build_method2):
+        # Combines two build method, implement
+        pass
+    
 class MediaMixin(Artifact):
     def __init__(self, *args, start_time: int, end_time: int, **kwargs):
         super().__init__(*args, **kwargs)
         self.mandatory_tags['start_time'] = start_time
         self.mandatory_tags['end_time'] = end_time
+
+    @classmethod
+    def build(cls, start_time: int, end_time: int, **kwargs):
+        return cls(start_time=start_time, end_time=end_time, **kwargs)
 
     @property
     def duration(self) -> int:
