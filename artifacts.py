@@ -6,6 +6,8 @@ from collections import deque
 from typing import Any
 import os 
 import json
+import tempfile
+from mutagen.mp3 import MP3
 class WebScraperArtifact(Artifact):
     def __init__(self, *args, user_agent: str = 'Mozilla/5.0', **kwargs):
         super().__init__(*args, **kwargs)
@@ -157,3 +159,102 @@ class StabilityArtifact(Artifact, GraphicalMixin):
 class MediaStabilityArtifact(MediaMixin, StabilityArtifact):
     pass
 
+class NarrationArtifact(Artifact):
+    def __init__(self, *args, **kwargs):
+        self.logger = setup_logger(self.__class__.__name__)
+        super().__init__(*args, **kwargs)
+
+    @classmethod
+    def build(cls, prompt: str, **kwargs):
+        logger = setup_logger(cls.__name__)
+        logger.debug(f"Building {cls.__name__} with prompt: {prompt[:50]}...")
+        
+        prompt_dict = {
+            "prompt": prompt
+        }
+        
+        return cls(prompt_dict, **kwargs)
+
+    def generate_data(self, prompt: dict, payload_data):
+        self.logger.info(f"Generating audio data for prompt: {prompt['prompt'][:50]}...")
+        url = f"https://api.elevenlabs.io/v1/text-to-speech/29vD33N1CtxCmqQRPOHJ"
+        headers = {
+            "Accept": "audio/mpeg",
+            "Content-Type": "application/json",
+            "xi-api-key": os.getenv("ELEVEN_API_KEY")
+        }
+        data = {
+            "text": prompt['prompt'],
+            "model_id": "eleven_monolingual_v1",
+            "voice_settings": {
+                "stability": 0.5,
+                "similarity_boost": 0.5
+            }
+        }
+        CHUNK_SIZE = 1024 
+        response = requests.post(url, json=data, headers=headers)
+
+        if response.status_code != 200:
+            response_content = json.loads(response.content)
+            self.logger.error(f"API request failed. Status code: {response.status_code}. Detail: {response_content.get('detail')}")
+            raise ValueError(f"Request failed with status code {response.status_code}")
+    
+        audio_data = b''
+        for chunk in response.iter_content(chunk_size=CHUNK_SIZE):
+            if chunk:
+                audio_data += chunk
+        
+        try:
+            duration = self.get_audio_duration(audio_data)
+            self.logger.info(f"Audio generated successfully. Duration: {duration} seconds")
+        except Exception as e:
+            self.logger.error(f"Error getting audio duration: {str(e)}")
+            raise ValueError("Likely invalid audio data, could be network issue?")
+        
+        data = {
+            "audio": audio_data
+        }
+        
+        metadata = {
+            "duration": duration,
+            "prompt": prompt['prompt']
+        }
+        
+        return data, metadata
+
+    def get_audio_duration(self, audio_data):
+        self.logger.debug("Getting audio duration")
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as temp_file:
+            temp_file.write(audio_data)
+            temp_file_path = temp_file.name
+
+        audio = MP3(temp_file_path)
+        duration = audio.info.length
+        os.remove(temp_file_path)
+        self.logger.debug(f"Audio duration: {duration} seconds")
+        return duration
+
+    def validate_data(self, data: dict):
+        self.logger.debug("Validating Narration artifact data")
+        super().validate_data(data)
+        if not isinstance(data.get("audio"), bytes):
+            self.logger.error("Validation failed: Audio data is not in bytes format")
+            raise ValueError("Audio data must be in bytes format")
+        self.logger.info("Narration artifact data validated successfully")
+
+class MediaNarrationArtifact(MediaMixin, NarrationArtifact):
+    @classmethod
+    def build(cls, prompt: str, start_time: float, end_time: float, **kwargs):
+        logger = setup_logger(cls.__name__)
+        logger.debug(f"Building {cls.__name__} with prompt: {prompt[:50]}, start_time: {start_time}, end_time: {end_time}")
+        
+        prompt_dict = {
+            "prompt": prompt
+        }
+        
+        mandatory_tags = {
+            "start_time": start_time,
+            "end_time": end_time
+        }
+        
+        return cls(prompt_dict, mandatory_tags=mandatory_tags, **kwargs)
