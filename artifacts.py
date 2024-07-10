@@ -8,6 +8,7 @@ import os
 import json
 import tempfile
 from mutagen.mp3 import MP3
+import anthropic
 class WebScraperArtifact(Artifact):
     def __init__(self, *args, user_agent: str = 'Mozilla/5.0', **kwargs):
         super().__init__(*args, **kwargs)
@@ -158,7 +159,6 @@ class StabilityArtifact(Artifact, GraphicalMixin):
         
 class MediaStabilityArtifact(MediaMixin, StabilityArtifact):
     pass
-
 class NarrationArtifact(Artifact):
     def __init__(self, *args, **kwargs):
         self.logger = setup_logger(self.__class__.__name__)
@@ -241,8 +241,80 @@ class NarrationArtifact(Artifact):
             self.logger.error("Validation failed: Audio data is not in bytes format")
             raise ValueError("Audio data must be in bytes format")
         self.logger.info("Narration artifact data validated successfully")
-
 class MediaNarrationArtifact(MediaMixin, NarrationArtifact):
+    pass
+class ClaudeArtifact(Artifact):
+    def __init__(self, *args, **kwargs):
+        self.logger = setup_logger(self.__class__.__name__)
+        super().__init__(*args, **kwargs)
+
+    @classmethod
+    def build(cls, prompt_prompt: str, prompt_content: str, prompt_model: str = "claude-3-sonnet-20240229", max_response_length: int = 4096, **kwargs):
+        logger = setup_logger(cls.__name__)
+        logger.debug(f"Building {cls.__name__} with prompt_prompt: {prompt_prompt[:50]}, prompt_content: {prompt_content[:50]}, prompt_model: {prompt_model}")
+        
+        prompt_dict = {
+            "prompt_prompt": prompt_prompt,
+            "prompt_content": prompt_content,
+            "prompt_model": prompt_model,
+            "max_response_length": max_response_length
+        }
+        
+        return cls(prompt_dict, **kwargs)
+    
+    def generate_data(self, prompt: dict, payload_data):
+        self.logger.info("Generating data with Claude API")
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+        client = anthropic.Client(api_key=api_key)
+        
+        prompt_prompt = prompt["prompt_prompt"]
+        prompt_content = prompt["prompt_content"]
+        prompt_model = prompt["prompt_model"]
+        max_response_length = prompt["max_response_length"]
+
+        full_prompt = f"{prompt_prompt} {prompt_content}"
+        self.logger.debug(f"Full prompt: {full_prompt[:100]}...")
+        
+        try:
+            self.logger.debug(f"Sending request to Claude API with model: {prompt_model}, max_tokens: {max_response_length}")
+            response = client.messages.create(
+                model=prompt_model,
+                max_tokens=max_response_length,
+                messages=[
+                    {"role": "user", "content": full_prompt}
+                ]
+            )
+            self.logger.info("Successfully received response from Claude API")
+        except Exception as e:
+            self.logger.error(f"Error in Claude API call: {str(e)}")
+            raise ValueError("Check Model and API Key!")
+
+        response_text = response.content[0].text
+        self.logger.debug(f"Response text (first 100 chars): {response_text[:100]}...")
+        self.logger.debug(f"Response type: {type(response_text)}")
+
+        data = {
+            "response": response_text
+        }
+        
+        metadata = {
+            "model": prompt_model,
+            "max_response_length": max_response_length,
+            "actual_response_length": len(response_text)
+        }
+        
+        return data, metadata
+
+    def validate_data(self, data: dict):
+        self.logger.debug("Validating Claude response data")
+        super().validate_data(data)
+        if not isinstance(data.get("response"), str):
+            self.logger.error("Validation failed: Response data is not a string")
+            raise ValueError("Response data must be a string")
+        if len(data["response"]) > self.prompt["max_response_length"]:
+            self.logger.error(f"Validation failed: Response length ({len(data['response'])}) exceeds the specified limit of max tokens ({self.prompt['max_response_length']})")
+            raise ValueError(f"Response length exceeds the specified limit of max tokens")
+        self.logger.info("Claude response data validated successfully")
     @classmethod
     def build(cls, prompt: str, start_time: float, end_time: float, **kwargs):
         logger = setup_logger(cls.__name__)
