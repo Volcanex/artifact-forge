@@ -19,6 +19,8 @@ Following this the aspiration was to leverage Kubernetes for scalability, treati
 
 This architecture would provide a flexible framework adaptable to various domains requiring intricate, interdependent data transformations. The library's design would prioritize scalability, resilience, and clarity, making it a powerful tool for managing complex data processing pipelines.
 
+## Simple Artifact diagram
+
 ![Basic structure of the Artifact superclass](artifact_structure.png)
 
 ## Table of Contents
