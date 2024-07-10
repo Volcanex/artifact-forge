@@ -1,6 +1,23 @@
 # ArtifactForge
 
-ArtifactForge is a flexible and extensible library for creating and managing various types of artifacts, with a focus on media-related functionalities.
+ArtifactForge is a library for creating and managing various types of artifacts, with a focus on media-related functionalities.
+
+This kind of exists now:
+<https://developer.nvidia.com/nim>
+
+## Background
+
+My end goal with this library was to create a flexible framework for managing complex, interdependent data transformations, with a particular focus on media generation scenarios. Each artifact would encapsulate both data and its transformation logic, ranging from simple API calls to sophisticated machine learning models. The edges of the graph would be implemented as one-way factory functions, enabling the derivation of new artifacts from existing ones.
+
+This is a basic implementation of the prior system.
+
+After this the next step would be to develop a system built around a graph structure (DAG), where nodes represent self-contained artifacts and edges represent factory functions.
+
+In a typical media generation pipeline, the system could start with a script artifact, which would then spawn a narration artifact. This narration could subsequently generate image descriptions, leading to the creation of images and subtitles. This graph structure would allow for efficient parallel processing of independent branches and provide a clear visualization of the entire generation process.
+
+Following this the aspiration was to leverage Kubernetes for scalability, treating each artifact as a potential job or pod, thus enabling distributed processing across a cluster. Data flow between artifacts would be managed through a combination of shared storage systems and direct transfer between pods. A central controller would orchestrate the execution flow based on the graph structure.
+
+This architecture would provide a flexible framework adaptable to various domains requiring intricate, interdependent data transformations. The library's design would prioritize scalability, resilience, and clarity, making it a powerful tool for managing complex data processing pipelines.
 
 ![Basic structure of the Artifact superclass](artifact_structure.png)
 
@@ -47,6 +64,8 @@ Combined artifacts inherit the attributes and methods from the specific, the bas
 ## JSON Formatting
 
 The library uses dicts for the `prompt`, `mandatory_tags`, `optional_tags`, `data`, and `metadata` attributes. These dicts are readily serialisable to JSON and this is enforced.
+
+The idea is to create a uniform interface.
 
 ## How This Structure Works
 
