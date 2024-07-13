@@ -2,9 +2,6 @@
 
 ArtifactForge is a library for creating and managing various types of artifacts, with a focus on media-related functionalities.
 
-This kind of exists now:
-<https://developer.nvidia.com/nim>
-
 ## Background
 
 My end goal with this library was to create a flexible framework for managing complex, interdependent data transformations, with a particular focus on media generation scenarios. Each artifact would encapsulate both data and its transformation logic, ranging from simple API calls to sophisticated machine learning models. The edges of the graph would be implemented as one-way factory functions, enabling the derivation of new artifacts from existing ones.
