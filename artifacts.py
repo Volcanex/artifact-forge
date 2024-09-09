@@ -17,8 +17,8 @@ class WebScraperArtifact(Artifact):
 
     @classmethod
     def build(cls, url: str, user_agent: str = 'Mozilla/5.0', payload_data=None, **kwargs):
-        prompt = {"url": url}
-        return cls(prompt, payload_data, user_agent=user_agent, **kwargs)
+        prompt_dict = {"url": url}
+        return cls(prompt_dict, payload_data, user_agent=user_agent, **kwargs)
 
     def generate_data(self, prompt: dict, payload_data):
         url = prompt["url"]
