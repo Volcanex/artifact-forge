@@ -17,7 +17,8 @@ class WebScraperArtifact(Artifact):
 
     @classmethod
     def build(cls, url: str, user_agent: str = 'Mozilla/5.0', payload_data=None, **kwargs):
-        return cls({"url": url}, payload_data, user_agent=user_agent, **kwargs)
+        prompt = {"url": url}
+        return cls(prompt, payload_data, user_agent=user_agent, **kwargs)
 
     def generate_data(self, prompt: dict, payload_data):
         url = prompt["url"]
@@ -241,6 +242,7 @@ class NarrationArtifact(Artifact):
             self.logger.error("Validation failed: Audio data is not in bytes format")
             raise ValueError("Audio data must be in bytes format")
         self.logger.info("Narration artifact data validated successfully")
+        
 class MediaNarrationArtifact(MediaMixin, NarrationArtifact):
     pass
 class ClaudeArtifact(Artifact):
@@ -249,14 +251,14 @@ class ClaudeArtifact(Artifact):
         super().__init__(*args, **kwargs)
 
     @classmethod
-    def build(cls, prompt_prompt: str, prompt_content: str, prompt_model: str = "claude-3-sonnet-20240229", max_response_length: int = 4096, **kwargs):
+    def build(cls, prompt: str, content: str, model: str = "claude-3-sonnet-20240229", max_response_length: int = 4096, **kwargs):
         logger = setup_logger(cls.__name__)
-        logger.debug(f"Building {cls.__name__} with prompt_prompt: {prompt_prompt[:50]}, prompt_content: {prompt_content[:50]}, prompt_model: {prompt_model}")
+        logger.debug(f"Building {cls.__name__} with prompt: {prompt[:50]}, content: {content[:50]}, model: {model}")
         
         prompt_dict = {
-            "prompt_prompt": prompt_prompt,
-            "prompt_content": prompt_content,
-            "prompt_model": prompt_model,
+            "prompt": prompt,
+            "content": content,
+            "model": model,
             "max_response_length": max_response_length
         }
         

@@ -8,7 +8,7 @@ def test_web_scraper_artifact():
     #artifact = WebScraperArtifact.build(url, user_agent="Test")
     #artifact.construct()
     
-    media_artifact = MediaWebScraperArtifact.build(url, 0, 60, user_agent=user_agent)
+    media_artifact = MediaWebScraperArtifact.build(url=url, start_time=0, end_time=60, user_agent=user_agent)
     media_artifact.construct()
     
     #print(f"Artifact Representation: {repr(artifact)}")
@@ -16,11 +16,16 @@ def test_web_scraper_artifact():
     
 def test_stability_artifact():
 
-    g = StabilityArtifact.build("A man in a tree", 0, 0, 256, 256)
+    g = StabilityArtifact.build(prompt="A man in a tree",  
+                                position_x=0,
+                                position_y=0,
+                                resolution_x=0, 
+                                resolution_y=0
+                                )
     g.construct()
         
     g.output_data_to_file("images/"+"testimage.png")
     
     
 if __name__ == '__main__':
-    test_stability_artifact()
+    test_web_scraper_artifact()
